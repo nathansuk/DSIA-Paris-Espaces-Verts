@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu&family=Wix+Madefor+Text:wght@400;500;600;700&display=swap');
 
 body{
-  font-family: 'Wix Madefor Text', sans-serif;
+    font-family: 'Wix Madefor Text', sans-serif;
+    background-color: #ececec;
 }
+
+.graph {
+    background-color: red;
+    border-radius: 10px;
+}
+
