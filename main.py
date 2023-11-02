@@ -14,26 +14,45 @@ app.layout = html.Div([
     html.H1(children='Paris : Espaces verts et assimilés'),
     layout.statistic_boxes.create_statistics_boxes(),
 
-    html.Div((
+    html.Div([
 
-        dcc.Graph(id='id-graph', figure=graphlib.create_pie_chart_space_type(),
-                  style={'backgroundColor': 'red', 'border-radius': '15px'}),
-        dcc.Graph(id='id-graph2', figure=graphlib.create_bar_chart_year_open()),
-        dcc.Graph(id='id-graph3', figure=graphlib.create_bubble_charts_count()),
-        dcc.Graph(id='id-graph4', figure=graphlib.create_histogram_street_type()),
-        dcc.Graph(id='id-graph5', figure=graphlib.create_heatmap_surface()),
-        # Source : https://medium.com/@shachiakyaagba_41915/integrating-folium-with-dash-5338604e7c56
-        html.Iframe(id='map', srcDoc=open('carte.html', 'r').read(), width='90%', height='500')
+        dcc.Graph(id='id-graph', figure=graphlib.create_pie_chart_space_type(), className='flex-item graph1'),
 
-    ), id='graphs-container')
+        html.Div([
+            dcc.Graph(id='id-graph2', figure=graphlib.create_bar_chart_year_open(), className='flex-item graph2'),
+            html.Div([
+                html.H3("Voir les données à partir de l'année: "),
+                graphlib.create_year_dropdown(),
+                html.H3('Afficher les : '),
+                graphlib.create_selection_perso()
+            ], className='perso-selection')
+        ], className='flex-item graph2-container'),
+
+    ], className='flex-container'),
+
+    html.Div([
+        dcc.Graph(id='id-graph3', figure=graphlib.create_bubble_charts_count(), className='flex-item graph3'),
+        dcc.Graph(id='id-graph4', figure=graphlib.create_histogram_street_type(), className='flex-item graph4'),
+    ], className='flex-container'),
+
+    html.Div([
+        dcc.Graph(id='id-graph5', figure=graphlib.create_heatmap_surface(), className='flex-item graph5'),
+
+        html.H1("Représentation des espaces verts parisiens"),
+        html.Iframe(id='map', srcDoc=open('carte.html', 'r').read(), width='100%', height='500', className='flex-item graph5')
+    ], className='flex-container')
 
 ], id='main-container')
 
-"""
-@callback(
-    Output('id-graph', 'figure')
+
+@app.callback(
+    Output('id-graph2', 'figure'),
+    [Input('year-dropdown', 'value'),
+     Input('selection-dropdown', 'value')]
 )
-"""
+def update_bar_chart(min_year, type_data):
+    return graphlib.create_bar_chart_year_open(min_year, type_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

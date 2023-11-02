@@ -42,34 +42,62 @@ body{
 }
 
 
-#graphs-container {
-    display: flex;
-    flex-direction: row;
-    flex-flow: wrap;
-    justify-content: space-between;
-}
-
-#id-graph {
-    width: 39%;
-
-}
-#id-graph2, #id-graph3, #id-graph4, #id-graph {
+.flex-container {
     margin-bottom: 20px;
 }
-#id-graph2 {
-    width: 60%;
+
+.flex-item {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    margin-right: 10px;
+    margin-bottom: 20px;
 }
 
-#id-graph3 {
-    width: 60%;
+.graph1 {
+    flex: 1;
 }
 
-#map {
-    width: 70%;
+.graph2 {
+    flex: 2;
 }
 
-#id-graph5 {
-    width: 29%;
+.graph3 {
+    flex: 6;
+}
+
+.graph4 {
+    flex: 4;
+}
+
+.graph5 {
+    flex: 5;
+}
+
+.graph2-container {
+    background-color: white;
+    height: auto;
+    padding-bottom: 50px;
+}
+
+.perso-selection {
+    margin-left: 70px;
+}
+
+@media screen and (max-width: 600px) {
+    .flex-item {
+        flex: 1 100%; /* Changer le comportement en une colonne à 100% de largeur */
+        margin-right: 0; /* Enlevez l'espacement horizontal entre les éléments */
+        margin-bottom: 20px; /* Ajoutez la marge en bas de chaque élément */
+    }
+
+    .flex-item:last-child {
+        margin-right: 0; /* Enlevez l'espacement horizontal pour le dernier élément */
+    }
+
+    .flex-container {
+        margin-bottom: 20px;
+    }
 }
 
 

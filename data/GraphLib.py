@@ -3,7 +3,9 @@ import plotly.express as px
 from data.DataReader import DataReader
 import folium
 import json
-
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from dash import dcc
 
 class GraphLib:
 
@@ -13,16 +15,98 @@ class GraphLib:
     # Return new pie chart showing space type repartition
     def create_pie_chart_space_type(self):
         fig = px.pie(self.data_reader.df, names="type_ev")
+        fig.update_layout(
+            title="Répartition des Types d'espaces verts",
+            font=dict(
+                family="Wix Madefor Text",
+                size=13
+            )
+        )
         return fig
 
     # Return new bar chart showing green spaces and their year when opened
-    def create_bar_chart_year_open(self):
+    def create_bar_chart_year_open(self, min_year=None, type_data=1):
         data = self.data_reader.df.dropna(subset=['annee_ouverture'])
-        data = data[data['annee_ouverture'] != 9999] # Deleting unusable data with year open equal to 9999
+        data_renovation = self.data_reader.df.dropna(subset=['annee_renovation'])
+
+        data = data[data['annee_ouverture'] != 9999]  # Supprimer les données inutilisables avec une année d'ouverture égale à 9999
+
+        if min_year is not None:
+            data = data[data['annee_ouverture'] >= min_year]
+
         count_by_year = data['annee_ouverture'].value_counts()
-        test = pd.DataFrame({'année': count_by_year.index, 'count': count_by_year.values})
-        fig = px.bar(test, x='année', y='count')
+        count_renovations = data_renovation['annee_renovation'].value_counts()
+
+        openings = pd.DataFrame({'Année': count_by_year.index, "Nombre d'ouvertures": count_by_year.values, 'Type': 'Ouvertures'})
+        renovations = pd.DataFrame({'Année': count_renovations.index, "Nombre de rénovations": count_renovations.values, 'Type': 'Rénovations'})
+
+        if type_data == 1:
+            combined_df = pd.concat([openings, renovations], ignore_index=True)
+        elif type_data == 2:
+            combined_df = openings
+        elif type_data == 3:
+            combined_df = renovations
+
+        fig = make_subplots(specs=[[{"secondary_y": False}]])
+
+        if 'Nombre d\'ouvertures' in combined_df.columns:
+            fig.add_trace(
+                go.Bar(x=combined_df['Année'], y=combined_df['Nombre d\'ouvertures'], name="Nombre d'ouvertures"),
+                secondary_y=False,
+            )
+
+        if 'Nombre de rénovations' in combined_df.columns:
+            fig.add_trace(
+                go.Bar(x=combined_df['Année'], y=combined_df['Nombre de rénovations'], name="Nombre de rénovations"),
+                secondary_y=False,
+            )
+            if 'Nombre d\'ouvertures' not in combined_df.columns:
+                fig.update_traces(marker=dict(color='red'))
+
+        fig.update_layout(
+            title="Nombre d'espaces verts ouverts et rénovés par année",
+            xaxis_title="Année",
+            yaxis_title="Nombre d'ouvertures / rénovations",
+            yaxis2=dict(title="Nombre de rénovations", overlaying='y', side='right'),
+            font=dict(family="Wix Madefor Text", size=13)
+        )
+
         return fig
+
+    def create_year_dropdown(self):
+        data = self.data_reader.df.dropna(subset=['annee_ouverture'])
+        annees_ouverture = sorted(data[data['annee_ouverture'] != 9999]['annee_ouverture'].dropna().unique())
+        options = [{'label': str(int(annee)), 'value': annee} for annee in annees_ouverture]
+
+        return dcc.Dropdown(
+            id='year-dropdown',
+            options=options,
+            value=min(annees_ouverture),
+            clearable=True,
+            style={'width': '50%'}
+        )
+
+    def create_selection_perso(self):
+        option = [{
+            'label': 'Ouvertures et rénovations',
+            'value': 1
+        },
+        {
+            'label': 'Ouvertures uniquement',
+            'value': 2
+        },
+        {
+            'label': 'Rénovations uniquement',
+            'value': 3
+        }
+        ]
+        return dcc.Dropdown(
+            id="selection-dropdown",
+            options=option,
+            value=1,
+            clearable=False,
+            style={'width': '50%'}
+        )
 
     # Return a map with all green spaces polygons drawn
     def create_map(self):
@@ -44,7 +128,12 @@ class GraphLib:
 
             # Delete zip code > 76000 (arbitrary) to focus only on Paris
             data = data[data['adresse_codepostal'] <= 76000]
-            fig = px.scatter(data, x='adresse_codepostal', y='Nombre d\'espaces verts', size='Nombre d\'espaces verts', color='Nombre d\'espaces verts', hover_name='adresse_codepostal')
+            fig = px.scatter(data, x='adresse_codepostal',
+                                   y='Nombre d\'espaces verts',
+                                   size='Nombre d\'espaces verts',
+                                   color='Nombre d\'espaces verts',
+                                   hover_name='adresse_codepostal',
+                                   title="Nombre d'espaces verts par arrondissement")
 
             # Update x,y axes
             fig.update_xaxes(title_text='Code postal')
@@ -56,6 +145,12 @@ class GraphLib:
                           '75011',
                           '75012', '75013', '75014', '75015', '75016', '75017', '75018', '75019', '75020'])
             fig.update_yaxes(title_text='Nombre d\'espaces verts')
+            fig.update_layout(
+                font=dict(
+                    family="Wix Madefor Text",
+                    size=13
+                )
+            )
             return fig
 
     def create_histogram_street_type(self):
@@ -81,7 +176,12 @@ class GraphLib:
         fig = px.bar(street_type_counts, x='Count', y='adresse_typevoie',
                      title='Répartition des Types de Voies',
                      labels={'adresse_typevoie': 'Type de Voie', 'Count': 'Nombre d\'Espaces Verts'}, )
-
+        fig.update_layout(
+            font=dict(
+                family="Wix Madefor Text",
+                size=13
+            )
+        )
         return fig
 
     def create_heatmap_surface(self):
@@ -89,9 +189,14 @@ class GraphLib:
         correlations = self.data_reader.df[['surface_totale_reelle', 'surface_horticole', 'perimeter']]
         correlations = correlations.corr()
 
-        # Créez la heatmap avec Plotly Express
         fig = px.imshow(correlations, x=correlations.index, y=correlations.columns,
                         labels=dict(color='Corrélation'), text_auto=True)
         fig.update_xaxes(side="top")
+        fig.update_layout(
+            font=dict(
+                family="Wix Madefor Text",
+                size=13
+            )
+        )
         return fig
 
