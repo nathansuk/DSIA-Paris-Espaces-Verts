@@ -4,18 +4,19 @@ import pandas as pd
 import plotly.express as px
 import folium
 import geopandas as gpd
+import os
 
-df = pd.read_csv('../assets/espaces_verts.csv', sep=';', encoding='utf8')
+df = pd.read_csv('../assets/datasets.csv', sep=';', encoding='utf8')
 
 
 def creer_piechart_type_espace():
-    df = pd.read_csv('../assets/espaces_verts.csv', sep=';', encoding='utf8')
+    df = pd.read_csv('../assets/datasets.csv', sep=';', encoding='utf8')
     piechart = px.pie(df, names="Typologie d'espace vert")
     return piechart
 
 
 def creer_histo():
-    df = pd.read_csv('../assets/espaces_verts.csv', sep=';', encoding='utf8')
+    df = pd.read_csv('../assets/datasets.csv', sep=';', encoding='utf8')
     df = df.dropna(subset=['Année de l\'ouverture'])
     df = df[df['Année de l\'ouverture'] != 9999]
     count_by_year = df['Année de l\'ouverture'].value_counts()
@@ -66,7 +67,7 @@ def creer_bubble_charts():
         fig.show()
 
 def create_histogram_street_type():
-    df = pd.read_csv('../assets/espaces_verts.csv', sep=';', encoding='utf8')
+    df = pd.read_csv('../assets/datasets.csv.csv', sep=';', encoding='utf8')
     df['Adresse - type voie'] = df['Adresse - type voie'].str.split().str[0]
     df = df[df['Adresse - type voie'] != 'ND']
     df['Adresse - type voie'] = df['Adresse - type voie'].str.replace('rue', 'RUE')
@@ -97,3 +98,31 @@ def create_heatmap_surface():
                     labels=dict(color='Corrélation'), text_auto=True)
     fig.update_xaxes(side="top")
     fig.show()
+
+def create_scatter_surfaces():
+    current_path = os.path.dirname(__file__)
+    csv_path = os.path.join(current_path, '../assets/datasets.csv')
+    df = pd.read_csv(csv_path, sep=';', encoding='utf8')
+
+    df_surface_par_arrondissement = df.groupby('adresse_codepostal')['surface_totale_reelle'].sum().reset_index()
+    df_surface_par_arrondissement = df_surface_par_arrondissement[df_surface_par_arrondissement['adresse_codepostal'] <= 76000]
+
+    fig = px.scatter(df_surface_par_arrondissement,
+                 x='adresse_codepostal',
+                 y='surface_totale_reelle',
+                 labels={'adresse_codepostal': 'Arrondissement', 'surface_totale_reelle': 'Surfaces totales réelles cumulées'},
+                 title='Surfaces cumulées des espaces verts par arrondissement',
+                 size='surface_totale_reelle',
+                 color='surface_totale_reelle')
+
+    fig.update_xaxes(
+        tickvals=[75001, 75002, 75003, 75004, 75005, 75006, 75007, 75008, 75009, 75010, 75011, 75012, 75013,
+                  75014,
+                  75015, 75016, 75017, 75018, 75019, 75020],
+        ticktext=['75001', '75002', '75003', '75004', '75005', '75006', '75007', '75008', '75009', '75010',
+                  '75011',
+                  '75012', '75013', '75014', '75015', '75016', '75017', '75018', '75019', '75020'])
+
+    fig.show()
+
+create_scatter_surfaces()
