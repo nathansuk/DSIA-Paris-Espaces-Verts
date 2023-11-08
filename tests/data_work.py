@@ -125,4 +125,12 @@ def create_scatter_surfaces():
 
     fig.show()
 
-create_scatter_surfaces()
+intervalles_surface = [0, 100, 1000, 10000, 100000, float('inf')]
+df['Surface Interval'] = pd.cut(df['surface_totale_reelle'], bins=intervalles_surface)
+counts = df['Surface Interval'].value_counts().sort_index()
+fig = px.bar(x=[f"{intervalle.left} - {intervalle.right}" for intervalle in counts.index],
+             y=counts.values,
+             labels={'x': 'Intervalle de Surface (m²)', 'y': 'Nombre d\'espaces verts'},
+             title='Nombre d\'espaces verts en fonction de leur surface totale réelle')
+
+fig.show()

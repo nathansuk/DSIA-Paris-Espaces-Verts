@@ -39,6 +39,7 @@ def create_main_layout(graphlib):
         html.Div([
 
             dcc.Graph(id='id-graph5', figure=graphlib.create_heatmap_surface(), className='flex-item graph5'),
+            dcc.Graph(id='id-graph7', figure=graphlib.create_histogram_surfaces(), className='flex-item graph5'),
 
             html.H1("Représentation des espaces verts parisiens"),
             layout.components.map.create_iframe_map()

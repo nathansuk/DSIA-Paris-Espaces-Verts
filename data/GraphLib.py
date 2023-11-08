@@ -237,3 +237,17 @@ class GraphLib:
         )
         return fig
 
+    def create_histogram_surfaces(self):
+        """
+        Create a new histogram showing number of green areas in a certain intervals of surfaces
+
+        :return: the histogram
+        """
+        intervalles = [0, 100, 1000, 10000, 100000, float('inf')]
+        self.data_reader.df['Surface Interval'] = pd.cut(self.data_reader.df['surface_totale_reelle'], bins=intervalles)
+        counts = self.data_reader.df['Surface Interval'].value_counts().sort_index()
+        fig = px.bar(x=[f"{intervalle.left} - {intervalle.right}" for intervalle in counts.index],
+                     y=counts.values,
+                     labels={'x': 'Intervalle de Surface (m²)', 'y': 'Nombre d\'espaces verts'},
+                     title='Nombre d\'espaces verts en fonction de leur surface totale réelle')
+        return fig
