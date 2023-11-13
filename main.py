@@ -8,6 +8,7 @@ graphlib = gl.GraphLib()  # Initialize GraphLib responsible for chart generation
 graphlib.create_map()  # Save map in .html file in order to be displayed
 
 app = Dash(__name__)
+app.title = "Dashboard : Espaces verts et assimilés parisiens"
 
 app.layout = layout.main_layout.create_main_layout(graphlib)
 
